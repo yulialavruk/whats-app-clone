@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
+import NoEncryptionIcon from "@material-ui/icons/NoEncryption";
 import SearchOutlinedIcon from "@material-ui/icons/SearchOutlined";
 import AttachFileIcon from "@material-ui/icons/AttachFile";
 import MoreVertIcon from "@material-ui/icons/MoreVert";
@@ -17,15 +18,20 @@ const Chat = () => {
   const [seed, setSeed] = useState("");
   const { roomId } = useParams();
   const [roomName, setRoomName] = useState("");
+  const [roomOwner, setRoomOwner] = useState("");
+  const [roomCreatedBy, setRoomCreatedBy] = useState("");
   const [messages, setMessages] = useState([]);
   const [{ user }, dispatch] = useStateValue();
 
   useEffect(() => {
-    console.log(roomId);
     if (roomId) {
       db.collection("rooms")
         .doc(roomId)
-        .onSnapshot((snapshot) => setRoomName(snapshot.data().name));
+        .onSnapshot((snapshot) => {
+          setRoomName(snapshot.data()?.name);
+          setRoomCreatedBy(snapshot.data()?.createdBy);
+          setRoomOwner(snapshot.data()?.roomOwner);
+        });
       db.collection("rooms")
         .doc(roomId)
         .collection("messages")
@@ -42,7 +48,6 @@ const Chat = () => {
 
   const sendMessage = (e) => {
     e.preventDefault();
-    console.log(input);
 
     db.collection("rooms").doc(roomId).collection("messages").add({
       message: input,
@@ -81,6 +86,17 @@ const Chat = () => {
       </div>
 
       <div className="chat__body">
+        <p className="chat__messageReminder">
+          <NoEncryptionIcon /> This is a whatsapp clone. Messages are not
+          encrpyted.
+        </p>
+
+        <p className="chat__messageReminder chat__createdBy">
+          {roomOwner === user.uid
+            ? "You created this rooom"
+            : `${roomCreatedBy} created this room`}
+        </p>
+
         {messages.map((message) => (
           <p
             className={`chat__message ${

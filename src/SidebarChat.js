@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Avatar from "@material-ui/core/Avatar";
 import db from "./firebase";
+import { useStateValue } from "./StateProvider";
 import "./SidebarChat.css";
 
 const SidebarChat = ({ id, name, addNewChat }) => {
+  const [{ user }, dispatch] = useStateValue();
   const [seed, setSeed] = useState("");
   const [messages, setMessages] = useState("");
 
@@ -29,6 +31,8 @@ const SidebarChat = ({ id, name, addNewChat }) => {
 
     if (roomName) {
       db.collection("rooms").add({
+        createdBy: user.displayName,
+        roomOwner: user.uid,
         name: roomName,
       });
     }
